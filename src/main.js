@@ -9,6 +9,8 @@ const {
   format,
   baseUri,
   description,
+  external_link_name,
+  collectionName,
   background,
   uniqueDnaTorrance,
   layerConfigurations,
@@ -73,9 +75,6 @@ const getElements = (path) => {
     .readdirSync(path)
     .filter((item) => !/(^|\/)\.[^\/\.]/g.test(item))
     .map((i, index) => {
-      if (i.includes("-")) {
-        throw new Error(`layer name can not contain dashes, please fix: ${i}`);
-      }
       return {
         id: index,
         name: cleanName(i),
@@ -131,15 +130,40 @@ const drawBackground = () => {
 const addMetadata = (_dna, _edition) => {
   let dateTime = Date.now();
   let tempMetadata = {
-    name: `${namePrefix} #${_edition}`,
+	file_path: `${baseUri}/${_edition}.png`,
+    nft_name: `${namePrefix} #${_edition}`,
+	external_link: external_link_name,
     description: description,
-    image: `${baseUri}/${_edition}.png`,
+    collection: collectionName,
+	properties: attributesList,
+levels: [],
+stats: [],
+unlockable_content: [
+  true,
+  "You will become a member of the BSMC In order to unlock lifetime access to Beautiful SuperModel Club one must own 1+ Beautiful Supermodels you will gain early access drops limited editions drops & free givaways.if you own 10+ any 10 nfts you will instantly bacome a lifetime memeber of the MythicNFTClub with you will gain early access to all future events drops giveaways & the ability to vote on future projects"
+],
+    explicit_and_sensitive_content: false,
+    supply: 1,
+    blockchain: "Polygon",
+    sale_type: "Fixed Price",
+    price: 0.0019,
+    method: [
+      "Sell to highest bidder",
+      0.07
+    ],
+    duration: [
+      "1 month"
+    ],
+    "specific_buyer": [
+      false
+    ],
+    "quantity": 1,
     dna: sha1(_dna),
     edition: _edition,
     date: dateTime,
     ...extraMetadata,
-    attributes: attributesList,
-    compiler: "HashLips Art Engine",
+    
+    compiler: "mythic NFT Club",
   };
   if (network == NETWORK.sol) {
     tempMetadata = {
@@ -149,7 +173,7 @@ const addMetadata = (_dna, _edition) => {
       description: tempMetadata.description,
       //Added metadata for solana
       seller_fee_basis_points: solanaMetadata.seller_fee_basis_points,
-      image: `${_edition}.png`,
+      image: `image.png`,
       //Added metadata for solana
       external_url: solanaMetadata.external_url,
       edition: _edition,
@@ -158,7 +182,7 @@ const addMetadata = (_dna, _edition) => {
       properties: {
         files: [
           {
-            uri: `${_edition}.png`,
+            uri: "image.png",
             type: "image/png",
           },
         ],
@@ -174,20 +198,16 @@ const addMetadata = (_dna, _edition) => {
 const addAttributes = (_element) => {
   let selectedElement = _element.layer.selectedElement;
   attributesList.push({
-    trait_type: _element.layer.name,
-    value: selectedElement.name,
+    type: _element.layer.name,
+    name: selectedElement.name,
   });
 };
 
 const loadLayerImg = async (_layer) => {
-  try {
-    return new Promise(async (resolve) => {
-      const image = await loadImage(`${_layer.selectedElement.path}`);
-      resolve({ layer: _layer, loadedImage: image });
-    });
-  } catch (error) {
-    console.error("Error loading image:", error);
-  }
+  return new Promise(async (resolve) => {
+    const image = await loadImage(`${_layer.selectedElement.path}`);
+    resolve({ layer: _layer, loadedImage: image });
+  });
 };
 
 const addText = (_sig, x, y, size) => {
@@ -426,7 +446,7 @@ const startCreating = async () => {
     }
     layerConfigIndex++;
   }
-  writeMetaData(JSON.stringify(metadataList, null, 2));
+  writeMetaData(JSON.stringify({ nft: metadataList }, null, 2));
 };
 
 module.exports = { startCreating, buildSetup, getElements };
